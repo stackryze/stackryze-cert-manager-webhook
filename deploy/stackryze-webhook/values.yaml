@@ -1,0 +1,24 @@
+# The GroupName must match the GROUP_NAME the webhook binary is built/run with
+# and the group used in the ACME Issuer solver config.
+groupName: acme.stackryze.com
+
+certManager:
+  namespace: cert-manager
+  serviceAccountName: cert-manager
+
+image:
+  repository: ghcr.io/stackryze/stackryze-cert-manager-webhook
+  tag: latest
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 443
+
+resources: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}

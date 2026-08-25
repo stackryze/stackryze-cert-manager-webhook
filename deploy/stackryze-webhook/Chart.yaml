@@ -1,0 +1,6 @@
+apiVersion: v2
+name: stackryze-webhook
+description: cert-manager DNS01 webhook solver for Stackryze DNS
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

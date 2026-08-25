@@ -1,0 +1,11 @@
+# Build artifacts
+stackryze-cert-manager-webhook
+/webhook
+dist/
+
+# Go
+*.exe
+*.test
+*.out
+vendor/
+_out/

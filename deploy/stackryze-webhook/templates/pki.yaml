@@ -1,0 +1,53 @@
+# PKI for the webhook's serving certificate, issued by cert-manager itself.
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "stackryze-webhook.selfSignedIssuer" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "stackryze-webhook.labels" . | nindent 4 }}
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "stackryze-webhook.rootCACertificate" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "stackryze-webhook.labels" . | nindent 4 }}
+spec:
+  secretName: {{ include "stackryze-webhook.rootCACertificate" . }}
+  duration: 43800h # 5y
+  issuerRef:
+    name: {{ include "stackryze-webhook.selfSignedIssuer" . }}
+  commonName: "ca.stackryze-webhook.cert-manager"
+  isCA: true
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "stackryze-webhook.rootCAIssuer" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "stackryze-webhook.labels" . | nindent 4 }}
+spec:
+  ca:
+    secretName: {{ include "stackryze-webhook.rootCACertificate" . }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "stackryze-webhook.servingCertificate" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "stackryze-webhook.labels" . | nindent 4 }}
+spec:
+  secretName: {{ include "stackryze-webhook.servingCertificate" . }}
+  duration: 8760h # 1y
+  issuerRef:
+    name: {{ include "stackryze-webhook.rootCAIssuer" . }}
+  dnsNames:
+    - {{ include "stackryze-webhook.fullname" . }}
+    - {{ include "stackryze-webhook.fullname" . }}.{{ .Release.Namespace }}
+    - {{ include "stackryze-webhook.fullname" . }}.{{ .Release.Namespace }}.svc

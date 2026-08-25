@@ -1,0 +1,99 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "stackryze-webhook.fullname" . }}
+  labels:
+    {{- include "stackryze-webhook.labels" . | nindent 4 }}
+---
+# Grant the webhook apiserver the ability to authenticate/authorize requests.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "stackryze-webhook.fullname" . }}:auth-delegator
+  labels:
+    {{- include "stackryze-webhook.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: {{ include "stackryze-webhook.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "stackryze-webhook.fullname" . }}:webhook-authentication-reader
+  namespace: kube-system
+  labels:
+    {{- include "stackryze-webhook.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: {{ include "stackryze-webhook.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+---
+# Allow the webhook to read the Stackryze API token Secret in any namespace.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "stackryze-webhook.fullname" . }}:secrets-reader
+  labels:
+    {{- include "stackryze-webhook.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "watch", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "stackryze-webhook.fullname" . }}:secrets-reader
+  labels:
+    {{- include "stackryze-webhook.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "stackryze-webhook.fullname" . }}:secrets-reader
+subjects:
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: {{ include "stackryze-webhook.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+---
+# Allow cert-manager to invoke this solver's API group.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "stackryze-webhook.fullname" . }}:domain-solver
+  labels:
+    {{- include "stackryze-webhook.labels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - {{ .Values.groupName }}
+    resources:
+      - "*"
+    verbs:
+      - "create"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "stackryze-webhook.fullname" . }}:domain-solver
+  labels:
+    {{- include "stackryze-webhook.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "stackryze-webhook.fullname" . }}:domain-solver
+subjects:
+  - apiGroup: ""
+    kind: ServiceAccount
+    name: {{ .Values.certManager.serviceAccountName }}
+    namespace: {{ .Values.certManager.namespace }}
