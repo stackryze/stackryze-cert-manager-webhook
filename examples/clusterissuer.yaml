@@ -24,7 +24,7 @@ spec:
             groupName: acme.stackryze.com
             solverName: stackryze
             config:
-              apiUrl: https://api.stackryze.com/api
+              apiUrl: https://api-dns.stackryze.com/api
               apiTokenSecretRef:
                 name: stackryze-api-token
                 key: token

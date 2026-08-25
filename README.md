@@ -7,7 +7,7 @@ for [cert-manager](https://cert-manager.io) that issues certificates (including
 Bearer token — no impact on the DNS serving path.
 
 ```
-cert-manager  ──(DNS-01 challenge)──►  stackryze-webhook  ──(Bearer token)──►  api.stackryze.com
+cert-manager  ──(DNS-01 challenge)──►  stackryze-webhook  ──(Bearer token)──►  api-dns.stackryze.com
                                               │
                                       creates/deletes TXT _acme-challenge
 ```
@@ -55,7 +55,7 @@ spec:
             groupName: acme.stackryze.com
             solverName: stackryze
             config:
-              apiUrl: https://api.stackryze.com/api
+              apiUrl: https://api-dns.stackryze.com/api
               apiTokenSecretRef:
                 name: stackryze-api-token
                 key: token
@@ -67,7 +67,7 @@ Then request a wildcard certificate — see [examples/clusterissuer.yaml](exampl
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `apiUrl` | no | API base (default `https://api.stackryze.com/api`) |
+| `apiUrl` | no | API base (default `https://api-dns.stackryze.com/api`) |
 | `apiTokenSecretRef.name` | yes | Secret holding the API token |
 | `apiTokenSecretRef.key` | yes | Key in the secret (e.g. `token`) |
 
